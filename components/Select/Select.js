@@ -24,7 +24,7 @@ export default class Select extends Component {
     pickerTitle: PropTypes.string, //PullPicker only
     editable: PropTypes.bool,
     icon: PropTypes.oneOfType([PropTypes.element, PropTypes.shape({uri: PropTypes.string}), PropTypes.number, PropTypes.oneOf(['none', 'default'])]),
-    iconTintColor: PropTypes.string, //set to null for no tint color
+    iconTintColor: PropTypes.string,
     placeholder: PropTypes.string,
     placeholderTextColor: PropTypes.string,
     onSelected: PropTypes.func, //(item, index)
@@ -85,34 +85,41 @@ export default class Select extends Component {
     return (!text || React.isValidElement(text)) ? text : `${text}`;
   }
 
-  buildStyle() {
-    let {style, size, disabled} = this.props;
+  buildProps() {
+    let {style, size, value, valueStyle, valueElement, disabled, iconTintColor, iconSize, placeholder, placeholderTextColor, ...others} = this.props;
 
-    let borderRadius, paddingTop, paddingBottom, paddingLeft, paddingRight, height;
+    //style
+    let borderRadius, fontSize, paddingTop, paddingBottom, paddingLeft, paddingRight, height;
     switch (size) {
       case 'lg':
         borderRadius = Theme.selectBorderRadiusLG;
+        fontSize = Theme.selectFontSizeLG;
         paddingTop = Theme.selectPaddingTopLG;
         paddingBottom = Theme.selectPaddingBottomLG;
         paddingLeft = Theme.selectPaddingLeftLG;
         paddingRight = Theme.selectPaddingRightLG;
         height = Theme.selectHeightLG;
+        iconSize = Theme.selectIconSizeLG;
         break;
       case 'sm':
         borderRadius = Theme.selectBorderRadiusSM;
+        fontSize = Theme.selectFontSizeSM;
         paddingTop = Theme.selectPaddingTopSM;
         paddingBottom = Theme.selectPaddingBottomSM;
         paddingLeft = Theme.selectPaddingLeftSM;
         paddingRight = Theme.selectPaddingRightSM;
         height = Theme.selectHeightSM;
+        iconSize = Theme.selectIconSizeSM;
         break;
       default:
         borderRadius = Theme.selectBorderRadiusMD;
+        fontSize = Theme.selectFontSizeMD;
         paddingTop = Theme.selectPaddingTopMD;
         paddingBottom = Theme.selectPaddingBottomMD;
         paddingLeft = Theme.selectPaddingLeftMD;
         paddingRight = Theme.selectPaddingRightMD;
         height = Theme.selectHeightMD;
+        iconSize = Theme.selectIconSizeMD;
     }
     style = [{
       backgroundColor: Theme.selectColor,
@@ -127,7 +134,30 @@ export default class Select extends Component {
     }].concat(style).concat({flexDirection: 'row', alignItems: 'center'});
     if (disabled) style = style.concat({opacity: Theme.btnDisabledOpacity});
 
-    return style;
+    //value
+    if (!placeholderTextColor) placeholderTextColor = Theme.selectPlaceholderTextColor;
+    valueStyle = [{
+      color: Theme.selectTextColor,
+      fontSize: fontSize,
+      flexGrow: 1,
+      overflow: 'hidden',
+    }].concat(valueStyle);
+    if (value === null || value === undefined) {
+      valueStyle = valueStyle.concat({color: placeholderTextColor});
+      valueElement = <Text style={valueStyle} numberOfLines={1} allowFontScaling={false}>{placeholder}</Text>;
+    } else {
+      let valueText = this.valueText;
+      if (React.isValidElement(valueText)) {
+        valueElement = valueText;
+      } else {
+        valueElement = <Text style={valueStyle} numberOfLines={1} allowFontScaling={false}>{valueText}</Text>;
+      }
+    }
+
+    //iconTintColor
+    if (!iconTintColor) iconTintColor = Theme.selectIconTintColor;
+    
+    this.props = {style, size, value, valueStyle, valueElement, disabled, iconTintColor, iconSize, placeholder, placeholderTextColor, ...others};
   }
 
   showPullPicker() {
@@ -168,50 +198,8 @@ export default class Select extends Component {
     }
   }
 
-  renderValue() {
-    let {value, valueStyle, placeholder, placeholderTextColor, size} = this.props;
-
-    let fontSize;
-    switch (size) {
-      case 'lg': fontSize = Theme.selectFontSizeLG; break;
-      case 'sm': fontSize = Theme.selectFontSizeSM; break;
-      default: fontSize = Theme.selectFontSizeMD;
-    }
-    valueStyle = [{
-      color: Theme.selectTextColor,
-      fontSize,
-      flexGrow: 1,
-      overflow: 'hidden',
-    }].concat(valueStyle);
-
-    if (!placeholderTextColor) placeholderTextColor = Theme.selectPlaceholderTextColor;
-
-    let valueElement;
-    if (value === null || value === undefined) {
-      valueStyle = valueStyle.concat({color: placeholderTextColor});
-      valueElement = <Text style={valueStyle} numberOfLines={1} allowFontScaling={false}>{placeholder}</Text>;
-    } else {
-      let valueText = this.valueText;
-      if (React.isValidElement(valueText)) {
-        valueElement = valueText;
-      } else {
-        valueElement = <Text style={valueStyle} numberOfLines={1} allowFontScaling={false}>{valueText}</Text>;
-      }
-    }
-    return valueElement;
-  }
-
-  renderIcon() {
-    let {size, icon, iconTintColor} = this.props;
-
-    let iconSize;
-    switch (size) {
-      case 'lg': iconSize = Theme.selectIconSizeLG; break;
-      case 'sm': iconSize = Theme.selectIconSizeSM; break;
-      default: iconSize = Theme.selectIconSizeMD;
-    }
-    if (iconTintColor === undefined) iconTintColor = Theme.selectIconTintColor;
-
+  renderIconElement() {
+    let {icon, iconTintColor, iconSize} = this.props;
     let iconElement;
     if (icon === null || icon === undefined || icon === 'none') {
       iconElement = null;
@@ -225,20 +213,17 @@ export default class Select extends Component {
           />
       );
     }
-
-    return (
-      <View style={{position: 'absolute', top: 0, bottom: 0, right: 0, justifyContent: 'center'}}>
-        {iconElement}
-      </View>
-    );
+    return iconElement;
   }
 
   render() {
-    let {style, children, disabled, size, value, valueStyle, items, getItemValue, getItemText, pickerType, pickerTitle, editable, icon, iconTintColor, placeholder, placeholderTextColor, onSelected, onPress, onLayout, ...others} = this.props;
+    this.buildProps();
+
+    let {style, disabled, icon, iconTintColor, editable, iconSize, valueElement, children, onPress, onLayout, ...others} = this.props;
     let ViewClass = disabled ? View : TouchableOpacity;
     return (
       <ViewClass
-        style={this.buildStyle()}
+        style={style}
         disabled={disabled || !editable}
         onPress={e => onPress ? onPress(e) : this.showPicker()}
         onLayout={e => {
@@ -250,10 +235,11 @@ export default class Select extends Component {
         {...others}
         ref='selectView'
       >
-        {this.renderValue()}
-        {this.renderIcon()}
+        {valueElement}
+        <View style={{position: 'absolute', top: 0, bottom: 0, right: 0, justifyContent: 'center'}}>
+          {this.renderIconElement()}
+        </View>
       </ViewClass>
     );
   }
 }
-

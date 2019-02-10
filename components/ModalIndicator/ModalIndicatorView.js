@@ -41,8 +41,11 @@ export default class ModalIndicatorView extends Overlay.View {
     this.setState({text: value});
   }
 
-  buildStyle() {
-    let {style, position} = this.props;
+  buildProps() {
+    super.buildProps();
+
+    let {style, contentStyle, position, color, ...others} = this.props;
+
     style = [{
       paddingLeft: Theme.miScreenPaddingLeft,
       paddingRight: Theme.miScreenPaddingRight,
@@ -50,16 +53,23 @@ export default class ModalIndicatorView extends Overlay.View {
       paddingBottom: Theme.miScreenPaddingBottom,
       justifyContent: position === 'top' ? 'flex-start' : (position === 'bottom' ? 'flex-end' : 'center'),
       alignItems: 'center',
-    }].concat(super.buildStyle());
-    return style;
+    }].concat(style);
+
+    contentStyle = {
+      alignItems: 'center',
+    };
+
+    if (!color) color = Theme.miIndicatorColor;
+
+    this.props = {style, contentStyle, position, color, ...others};
   }
 
   renderContent() {
-    let {size, color} = this.props;
+    let {contentStyle, size, color} = this.props;
     let {text} = this.state;
     return (
-      <View style={{alignItems: 'center'}}>
-        <ActivityIndicator size={size} color={color || Theme.miIndicatorColor} />
+      <View style={contentStyle}>
+        <ActivityIndicator size={size} color={color} />
         {React.isValidElement(text) ? text :
           <Text style={{color: Theme.miTextColor, fontSize: Theme.miFontSize, paddingTop: Theme.miTextPaddingTop}}>
             {text}

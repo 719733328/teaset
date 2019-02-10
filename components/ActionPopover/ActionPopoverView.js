@@ -34,9 +34,9 @@ export default class ActionPopoverView extends Overlay.PopoverView {
     item.onPress && item.onPress();
   }
 
-  buildPopoverStyle() {
-    this.defaultDirectionInsets = Theme.apDirectionInsets;
-    let {popoverStyle, arrow} = super.buildPopoverStyle();
+  buildProps() {
+    let {popoverStyle, directionInsets, items, children, ...others} = this.props;
+
     popoverStyle = [{
       backgroundColor: Theme.apColor,
       paddingVertical: Theme.apPaddingVertical,
@@ -44,15 +44,15 @@ export default class ActionPopoverView extends Overlay.PopoverView {
       borderRadius: Theme.apBorderRadius,
       flexDirection: 'row',
     }].concat(popoverStyle);
-    return {popoverStyle, arrow};
-  }
 
-  renderContent() {
-    let {items} = this.props;
-    let list = [];
+    if (!directionInsets && directionInsets !== 0) {
+      directionInsets = Theme.apDirectionInsets;
+    }
+
+    children = [];
     for (let i = 0; items && i < items.length; ++i) {
       let item = items[i];
-      list.push(
+      children.push(
         <this.constructor.Item
           key={'item' + i}
           title={item.title}
@@ -61,7 +61,9 @@ export default class ActionPopoverView extends Overlay.PopoverView {
           />
       );
     }
-    return super.renderContent(list);
-  }
 
+    this.props = {popoverStyle, directionInsets, items, children, ...others} ;
+
+    super.buildProps();
+  }
 }

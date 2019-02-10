@@ -14,8 +14,12 @@ export default class PullPickerItem extends ListRow {
     selected: PropTypes.bool,
   };
 
-  renderAccessory(accessory = null) {
-    return super.renderAccessory(this.props.selected ? 'check' : 'empty');
+  buildProps() {
+    let {selected, accessory, ...others} = this.props;
+    accessory = selected ? 'check' : 'empty';
+    this.props = {selected, accessory, ...others} ;
+
+    super.buildProps();
   }
 
 }

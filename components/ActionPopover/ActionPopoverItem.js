@@ -21,22 +21,7 @@ export default class ActionPopoverItem extends Component {
     ...TouchableOpacity.defaultProps,
   };
 
-  renderTitle() {
-    let {title} = this.props;
-
-    if ((title || title === '' || title === 0) && !React.isValidElement(title)) {
-      let textStyle = {
-        backgroundColor: 'rgba(0, 0, 0, 0)',
-        color: Theme.apItemTitleColor,
-        fontSize: Theme.apItemFontSize,
-      };
-      title = <Text style={textStyle} numberOfLines={1}>{title}</Text>;
-    }
-
-    return title;
-  }
-
-  render() {
+  buildProps() {
     let {style, title, leftSeparator, rightSeparator, ...others} = this.props;
 
     style = [{
@@ -47,9 +32,25 @@ export default class ActionPopoverItem extends Component {
       borderRightWidth: rightSeparator ? Theme.apSeparatorWidth : 0,
     }].concat(style);
 
+    if ((title || title === '' || title === 0) && !React.isValidElement(title)) {
+      let textStyle = {
+        backgroundColor: 'rgba(0, 0, 0, 0)',
+        color: Theme.apItemTitleColor,
+        fontSize: Theme.apItemFontSize,
+      };
+      title = <Text style={textStyle} numberOfLines={1}>{title}</Text>;
+    }
+
+    this.props = {style, title, leftSeparator, rightSeparator, ...others};
+  }
+
+  render() {
+    this.buildProps();
+
+    let {title, ...others} = this.props;
     return (
-      <TouchableOpacity style={style} {...others}>
-        {this.renderTitle()}
+      <TouchableOpacity {...others}>
+        {title}
       </TouchableOpacity>
     );
   }

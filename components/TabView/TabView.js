@@ -37,36 +37,20 @@ export default class TabView extends Component {
     };
   }
 
-  get sheets() {
-    let {children} = this.props;
-    if (!(children instanceof Array)) {
-      if (children) children = [children];
-      else children = [];
-    }
-    children = children.filter(item => item); //remove empty item
-    return children;
-  }
-
   get activeIndex() {
     let activeIndex = this.props.activeIndex;
     if (activeIndex || activeIndex === 0) return activeIndex;
     else return this.state.activeIndex;
   }
 
-  buildStyle() {
-    let {style} = this.props;
+  buildProps() {
+    let {style, barStyle, children, ...others} = this.props;
+    let {bottom: bottomInset} = Theme.screenInset;
+
     style = [{
       flexDirection: 'column',
       alignItems: 'stretch',
     }].concat(style);
-    return style;
-  }
-
-  renderBar() {
-    //Overflow is not supported on Android, then use a higher container view to support "big icon button"
-    let {barStyle, onChange} = this.props;
-    let {bottom: bottomInset} = Theme.screenInset;
-
     barStyle = [{
       backgroundColor: Theme.tvBarColor,
       position: 'absolute',
@@ -96,12 +80,24 @@ export default class TabView extends Component {
       minHeight: height - paddingTop - paddingBottom,
     };
 
+    if (!(children instanceof Array)) {
+      if (children) children = [children];
+      else children = [];
+    }
+    children = children.filter(item => item); //remove empty item
+
+    return ({style, barStyle, buttonContainerStyle, buttonStyle, children, ...others});
+  }
+
+  renderBar(props) {
+    //Overflow is not supported on Android, then use a higher container view to support "big icon button"
+    let {barStyle, buttonContainerStyle, buttonStyle, onChange, children} = props;
     let sheetCount = 0;
     return (
-      <View  style={{height: barStyle.height}} pointerEvents='box-none'>
+      <View pointerEvents='box-none'>
         <View style={barStyle} />
         <View style={buttonContainerStyle} pointerEvents='box-none'>
-          {this.sheets.map((item, index) => {
+          {children.map((item, index) => {
             let {type, title, icon, activeIcon, iconContainerStyle, badge, onPress} = item.props;
             let sheetIndex = sheetCount;
             if (type === 'sheet') sheetCount += 1;
@@ -132,16 +128,16 @@ export default class TabView extends Component {
     );
   }
 
-  renderProjector() {
+  renderProjector(props) {
     return (
       <Projector style={{flex: 1}} index={this.activeIndex}>
-        {this.sheets.filter(item => item && item.props.type === 'sheet')}
+        {props.children.filter(item => item && item.props.type === 'sheet')}
       </Projector>
     );
   }
 
-  renderCarousel() {
-    let {onChange} = this.props;
+  renderCarousel(props) {
+    let {children, onChange} = props;
     return (
       <Carousel
         style={{flex: 1}}
@@ -154,17 +150,20 @@ export default class TabView extends Component {
           this.setState({activeIndex: index}, () => onChange && onChange(index));
         }}
       >
-        {this.sheets.filter(item => item && item.props.type === 'sheet')}
+        {children.filter(item => item && item.props.type === 'sheet')}
       </Carousel>
     );
   }
 
   render() {
-    let {style, children, type, barStyle, activeIndex, onChange, ...others} = this.props;
+    let props = this.buildProps();
+
+    let {barStyle, type, children, onChange, ...others} = props; //disable View.onChange
     return (
-      <View style={this.buildStyle()} {...others}>
-        {type === 'carousel' ? this.renderCarousel() : this.renderProjector()}
-        {this.renderBar()}
+      <View {...others}>
+        {type === 'carousel' ? this.renderCarousel(props) : this.renderProjector(props)}
+        <View style={{height: barStyle.height, width: 1}} />
+        {this.renderBar(props)}
       </View>
     );
   }

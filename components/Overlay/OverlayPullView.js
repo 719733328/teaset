@@ -126,51 +126,44 @@ export default class OverlayPullView extends OverlayView {
     }
   }
 
-  buildStyle() {
-    let {side} = this.props;
-    let sideStyle;
+  buildProps() {
+    super.buildProps();
+
+    let {side, style, containerStyle, ...others} = this.props;
+
+    let sideStyle, contentStyle;
     //Set flexDirection so that the content view will fill the side
     switch (side) {
       case 'top':
         sideStyle = {flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'stretch'};
-        break;
-      case 'left':
-        sideStyle = {flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'stretch'};
-        break;
-      case 'right':
-        sideStyle = {flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'stretch'};
-        break;
-      default:
-        sideStyle = {flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'stretch'};
-    }
-    return super.buildStyle().concat(sideStyle);
-  }
-
-  renderContent(content = null) {
-    let {side, containerStyle, children} = this.props;
-
-    let contentStyle;
-    switch (side) {
-      case 'top':
         contentStyle = {marginTop: this.state.marginValue};
         break;
       case 'left':
+        sideStyle = {flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'stretch'};
         contentStyle = {marginLeft: this.state.marginValue};
         break;
       case 'right':
+        sideStyle = {flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'stretch'};
         contentStyle = {marginRight: this.state.marginValue};
         break;
       default:
+        sideStyle = {flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'stretch'};
         contentStyle = {marginBottom: this.state.marginValue};
     }
+    style = [].concat(style).concat(sideStyle);
     contentStyle.opacity = this.state.showed ? 1 : 0;
     containerStyle = [{
-      backgroundColor: Theme.defaultColor,
+      backgroundColor: Theme.defaultColor,//rgba(0, 0, 0, 0)',
     }].concat(containerStyle).concat(contentStyle);
 
+    this.props = {side, style, containerStyle, ...others};
+  }
+
+  renderContent() {
+    let {containerStyle, children} = this.props;
     return (
       <Animated.View style={containerStyle} onLayout={(e) => this.onLayout(e)}>
-        {content ? content : children}
+        {children}
       </Animated.View>
     );
   }

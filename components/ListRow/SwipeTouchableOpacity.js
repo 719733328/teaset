@@ -162,8 +162,14 @@ export default class SwipeTouchableOpacity extends TouchableOpacity {
     });
   }
 
+  buildProps() {
+    let {style, ...others} = this.props;
+    style = [].concat(style).concat({transform: [{translateX: this.state.translateX}]});
+    this.props = {style, ...others};
+  }
+
   render() {
-    let view = super.render();
-    return React.cloneElement(view, {style: view.props.style.concat({transform: [{translateX: this.state.translateX}]})});
+    this.buildProps();
+    return super.render();
   }
 }

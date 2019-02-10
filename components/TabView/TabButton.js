@@ -28,29 +28,61 @@ export default class TabButton extends Component {
     active: false,
   };
 
-  buildStyle() {
-    let {style} = this.props;
+  buildProps() {
+    let {style, title, titleStyle, activeTitleStyle, icon, activeIcon, active, badge, iconContainerStyle, ...others} = this.props;
+
     style = [{
       width: Theme.tvBarBtnWidth,
       overflow: 'visible',
       alignItems: 'center',
       justifyContent: 'center',
     }].concat(style);
-    return style;
-  }
 
-  renderIcon() {
-    let {icon, activeIcon, active, badge, iconContainerStyle} = this.props;
-    if (active && activeIcon !== null && activeIcon !== undefined) icon = activeIcon;
-    if (icon === null || icon === undefined) return icon;
+    if (!React.isValidElement(title) && (title || title === '' || title === 0)) {
+      let textStyle;
+      if (active) {
+        textStyle = [{
+          backgroundColor: 'rgba(0, 0, 0, 0)',
+          color: Theme.tvBarBtnActiveTitleColor,
+          fontSize: Theme.tvBarBtnActiveTextFontSize,
+        }].concat(titleStyle).concat(activeTitleStyle);
+      } else {
+        textStyle = [{
+          backgroundColor: 'rgba(0, 0, 0, 0)',
+          color: Theme.tvBarBtnTitleColor,
+          fontSize: Theme.tvBarBtnTextFontSize,
+        }].concat(titleStyle);
+      }
+      title = <Text style={textStyle} numberOfLines={1}>{title}</Text>;
+    }
 
-    if (!React.isValidElement(icon)) {
+    if (!activeIcon && activeIcon !== 0) activeIcon = icon;
+
+    if (!React.isValidElement(icon) && (icon || icon === 0)) {
       let iconStyle = {
         width: Theme.tvBarBtnIconSize,
         height: Theme.tvBarBtnIconSize,
-        tintColor: active ? Theme.tvBarBtnIconActiveTintColor : Theme.tvBarBtnIconTintColor,
+        tintColor: Theme.tvBarBtnIconTintColor,
       };
-      icon = <Image style={iconStyle} source={icon} />;      
+      icon = <Image style={iconStyle} source={icon} />
+    }
+
+    if (!React.isValidElement(activeIcon) && (activeIcon || activeIcon === 0)) {
+      let iconStyle = {
+        width: Theme.tvBarBtnIconSize,
+        height: Theme.tvBarBtnIconSize,
+        tintColor: Theme.tvBarBtnIconActiveTintColor,
+      };
+      activeIcon = <Image style={iconStyle} source={activeIcon} />
+    }
+
+    if (!React.isValidElement(badge) && badge) {
+      let badgeStyle = {
+        position: 'absolute',
+        right: 0,
+        top: 0,
+      };
+      badge = <Badge style={badgeStyle} count={badge} />;
     }
 
     iconContainerStyle = [{
@@ -59,51 +91,24 @@ export default class TabButton extends Component {
       justifyContent: 'center',
     }].concat(iconContainerStyle);
 
-    return <View style={iconContainerStyle}>{icon}</View>;
-  }
-
-  renderTitle() {
-    let {title, titleStyle, activeTitleStyle, active} = this.props;
-    if (title === null || title === undefined || React.isValidElement(title)) return title;
-
-    let textStyle;
-    if (active) {
-      textStyle = [{
-        backgroundColor: 'rgba(0, 0, 0, 0)',
-        color: Theme.tvBarBtnActiveTitleColor,
-        fontSize: Theme.tvBarBtnActiveTextFontSize,
-      }].concat(titleStyle).concat(activeTitleStyle);
-    } else {
-      textStyle = [{
-        backgroundColor: 'rgba(0, 0, 0, 0)',
-        color: Theme.tvBarBtnTitleColor,
-        fontSize: Theme.tvBarBtnTextFontSize,
-      }].concat(titleStyle);
-    }
-    return <Text style={textStyle} numberOfLines={1}>{title}</Text>;
-  }
-
-  renderBadge() {
-    let {badge} = this.props;
-    if (!badge || React.isValidElement(badge)) return badge;
-
-    let badgeStyle = {
-      position: 'absolute',
-      right: 0,
-      top: 0,
-    };
-    return <Badge style={badgeStyle} count={badge} />;
+    this.props = {style, title, titleStyle, activeTitleStyle, icon, activeIcon, active, badge, iconContainerStyle, ...others};
   }
 
   render() {
-    let {style, children, title, titleStyle, activeTitleStyle, icon, activeIcon, active, iconContainerStyle, badge, ...others} = this.props;
+    this.buildProps();
+
+    let {title, icon, activeIcon, active, badge, iconContainerStyle, ...others} = this.props;
+    let useIcon = active ? activeIcon : icon;
     return (
-      <TouchableOpacity style={this.buildStyle()} {...others}>
-        {this.renderIcon()}
-        {this.renderTitle()}
-        {this.renderBadge()}
+      <TouchableOpacity {...others}>
+        {!useIcon ? null :
+          <View style={iconContainerStyle}>
+            {useIcon}
+          </View>
+        }
+        {title}
+        {badge}
       </TouchableOpacity>
     );
   }
 }
-

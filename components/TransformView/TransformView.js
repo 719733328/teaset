@@ -359,58 +359,48 @@ export default class TransformView extends Component {
     }
   }
 
-  buildStyle() {
+  buildProps() {
     let {style, containerStyle, ...others} = this.props;
     let {translateX, translateY, scale} = this.state;
+
     style = StyleSheet.flatten([{
       flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
       overflow: 'hidden',
     }].concat(style));
-    return style;
-  };
-
-  buildContainerStyle() {
-    let {containerStyle} = this.props;
-    let {translateX, translateY, scale} = this.state;
     containerStyle = [].concat(containerStyle).concat({
       transform: [{translateX: translateX}, {translateY: translateY}, {scale: scale}],
     });
-    return containerStyle;
-  }
 
-  onLayout(e) {
-    this.viewLayout = e.nativeEvent.layout;
-    this.props.onLayout && this.props.onLayout(e);    
-  }
-
-  renderContent() {
-    return this.props.children;
+    this.props = {style, containerStyle, ...others};
   }
 
   render() {
-    let {style, children, containerStyle, maxScale, minScale, inertial, magnetic, tension, onWillTransform, onTransforming, onDidTransform, onWillInertialMove, onDidInertialMove, onWillMagnetic, onDidMagnetic, onPress, onLongPress, onLayout, ...others} = this.props;
+    this.buildProps();
+
+    let {containerStyle, children, onLayout, ...others} = this.props;
     return (
       <View
         {...others}
-        style={this.buildStyle()}
-        onLayout={e => this.onLayout(e)}
+        onLayout={e => {
+          this.viewLayout = e.nativeEvent.layout;
+          onLayout && onLayout(e);
+        }}
         ref='view'
         {...this.panResponder.panHandlers}
       >
         <Animated.View
-          style={this.buildContainerStyle()}
+          style={containerStyle}
           ref='containerView'
           onLayout={e => {
             this.initContentLayout = e.nativeEvent.layout;
           }}
         >
-          {this.renderContent()}
+          {children}
         </Animated.View>
       </View>
     );
   }
 
 }
-

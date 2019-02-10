@@ -33,8 +33,8 @@ export default class BasePage extends Component {
   constructor(props) {
     super(props);
     this.didMount = false; //代替被废弃的isMounted
-    this.isFocused = false; //this.state.isFocused move to this.isFocused
     this.state = {
+      isFocused: false,
     };
   }
 
@@ -67,7 +67,7 @@ export default class BasePage extends Component {
 
   //Call after the scene transition by Navigator.onDidFocus
   onDidFocus() {
-    this.isFocused = true;
+    if (!this.state.isFocused) this.setState({isFocused: true});
   }
 
   //Call before the scene transition by Navigator.onWillFocus
@@ -86,13 +86,13 @@ export default class BasePage extends Component {
     return false;
   }
 
-  buildStyle() {
-    let {style} = this.props;
+  buildProps() {
+    let {style, ...others} = this.props;
     style = [{
       flex: 1,
       backgroundColor: Theme.pageColor,
     }].concat(style);
-    return style;
+    return ({style, ...others});
   }
 
   renderPage() {
@@ -100,12 +100,13 @@ export default class BasePage extends Component {
   }
 
   render() {
-    let {style, children, scene, autoKeyboardInsets, keyboardTopInsets, ...others} = this.props;
+    let {autoKeyboardInsets, keyboardTopInsets, ...others} = this.buildProps();
     return (
-      <View style={this.buildStyle()} {...others}>
+      <View {...others}>
         {this.renderPage()}
         {autoKeyboardInsets ? <KeyboardSpace topInsets={keyboardTopInsets} /> : null}
       </View>
     );
   }
 }
+

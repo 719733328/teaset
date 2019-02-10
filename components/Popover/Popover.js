@@ -65,8 +65,8 @@ export default class Popover extends Component {
     return style;
   }
 
-  buildStyle() {
-    let {style, arrow, paddingCorner, headerStyle, arrowStyle, contentStyle, popoverStyle} = this.props;
+  buildProps() {
+    let {style, arrow, paddingCorner, headerStyle, arrowStyle, contentStyle, popoverStyle, ...others} = this.props;
 
     style = [{
       backgroundColor: Theme.popoverColor,
@@ -79,12 +79,10 @@ export default class Popover extends Component {
     let {backgroundColor, borderColor, borderRadius, borderWidth} = fs;
 
     let arrowSize = 7; //Square side length
-    let halfSquareSize = Math.sqrt(arrowSize * arrowSize * 2) / 2; //The half-length of the square diagonal: sqrt(7^2 + 7^2) / 2 = 4.95
-    halfSquareSize = Math.ceil(halfSquareSize / Theme.pixelSize) * Theme.pixelSize;
-    let headerSize = halfSquareSize + borderWidth;
+    let headerSize = Math.sqrt(arrowSize * arrowSize * 2) / 2 + borderWidth; //The half-length of the square diagonal: sqrt(7^2 + 7^2) / 2 = 4.95
     let headerPadding = headerSize - arrowSize / 2; //Let the center of square on the edge: 5 - (7 / 2) = 1.5
     let headerPaddingCorner = paddingCorner ? paddingCorner : Theme.popoverPaddingCorner;
-    let contentPadding = halfSquareSize;
+    let contentPadding = headerSize - borderWidth;
 
     let headerLayouts = {
       none:        {},
@@ -171,7 +169,7 @@ export default class Popover extends Component {
       backgroundColor: useArrow === 'none' ? Theme.popoverColor : 'rgba(0, 0, 0, 0)', //Transparent background will cause a warning at debug mode
     }].concat(popoverLayouts[useArrow]);
 
-    return {popoverStyle, contentStyle, headerStyle, arrowStyle};
+    this.props = {style, arrow, paddingCorner, headerStyle, arrowStyle, contentStyle, popoverStyle, ...others};
   }
 
   onLayout(e) {
@@ -183,17 +181,21 @@ export default class Popover extends Component {
   }
 
   render() {
-    let {style, children, arrow, paddingCorner, onLayout, ...others} = this.props;
-    let {popoverStyle, contentStyle, headerStyle, arrowStyle} = this.buildStyle();
+    this.buildProps();
+
+    let {style, arrow, headerStyle, arrowStyle, contentStyle, popoverStyle, children, onLayout, ...others} = this.props;
     return (
       <View style={popoverStyle} onLayout={(e) => this.onLayout(e)} {...others}>
-        <View style={contentStyle}>
+        <View style={contentStyle} activeOpacity={1}>
           {children}
         </View>
-        {!arrow || arrow === 'none' ? null : <View style={headerStyle}><View style={arrowStyle} /></View>}
+        {!arrow || arrow === 'none' ? null :
+          <View style={headerStyle}>
+            <View style={arrowStyle} />
+          </View>
+        }
       </View>
     );
   }
 
 }
-

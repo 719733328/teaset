@@ -46,13 +46,15 @@ export default class ActionSheetView extends Overlay.PullView {
     this.close(true);
   }
 
-  renderContent() {
-    let {items, cancelItem} = this.props;
+  buildProps() {
+    super.buildProps();
 
-    let list = [];
+    let {items, cancelItem, children, ...others} = this.props;
+
+    children = [];
     for (let i = 0; items && i < items.length; ++i) {
       let item = items[i];
-      list.push(
+      children.push(
         <this.constructor.Item
           key={'item' + i}
           title={item.title}
@@ -63,7 +65,7 @@ export default class ActionSheetView extends Overlay.PullView {
       );
     }
     if (cancelItem) {
-      list.push(
+      children.push(
         <this.constructor.Item
           key={'cancelItem'}
           type='cancel'
@@ -74,7 +76,7 @@ export default class ActionSheetView extends Overlay.PullView {
           />
       );
     }
-    list.push(
+    children.push(
       <View
         style={{
           backgroundColor: cancelItem ? Theme.asCancelItemColor : Theme.asItemColor,
@@ -84,7 +86,7 @@ export default class ActionSheetView extends Overlay.PullView {
         />
     );
 
-    return super.renderContent(list);
+    this.props = {items, cancelItem, children, ...others};
   }
 
 }

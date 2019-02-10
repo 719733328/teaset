@@ -21,8 +21,9 @@ export default class NavigationButton extends TouchableOpacity {
     tintColor: PropTypes.string,
   };
 
-  buildStyle() {
-    let {style} = this.props;
+  buildProps() {
+    let {style, ...others} = this.props;
+
     style = [{
       backgroundColor: 'rgba(0, 0, 0, 0)',
       paddingLeft: 6,
@@ -31,21 +32,13 @@ export default class NavigationButton extends TouchableOpacity {
       flexDirection: 'row',
       alignItems: 'center',
     }].concat(style);
-    return style;
-  }
 
-  renderTitle() {
-    return this.props.children;
+    this.props = {style, ...others};
   }
 
   render() {
-    let {style, children, ...others} = this.props;
-    style = this.buildStyle();
-    return (
-      <TouchableOpacity style={style} {...others}>
-        {this.renderTitle()}
-      </TouchableOpacity>
-    );
+    this.buildProps();
+    return super.render();
   }
 
 }

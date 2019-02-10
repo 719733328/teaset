@@ -270,19 +270,11 @@ export default class AlbumSheet extends TransformView {
     });
   }
 
-  buildStyle() {
-    return [{backgroundColor: 'rgba(0, 0, 0, 0)'}].concat(super.buildStyle());
-  }
-
-  onLayout(e) {
-    let {width, height} = e.nativeEvent.layout;
-    this.layoutChange(width, height);
-    super.onLayout(e);
-  }
-
-  renderContent() {
-    let {image, thumb, children} = this.props;
+  buildProps() {
+    let {style, image, thumb, load, children, onLayout, ...others} = this.props;
     let {position, imageLoaded, thumbLoaded, fitWidth, fitHeight} = this.state;
+
+    style = [{backgroundColor: 'rgba(0, 0, 0, 0)'}].concat(style);
 
     let childrenStyle = {width: fitWidth, height: fitHeight};
     if (React.isValidElement(image)) {
@@ -295,7 +287,15 @@ export default class AlbumSheet extends TransformView {
       }
     }
 
-    return children;
+    let saveOnLayout = onLayout;
+    onLayout = e => {
+      let {width, height} = e.nativeEvent.layout;
+      this.layoutChange(width, height);
+      saveOnLayout && saveOnLayout(e);
+    };
+
+    this.props = {style, image, thumb, load, children, onLayout, ...others};
+    super.buildProps();
   }
 
 }

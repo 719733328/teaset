@@ -21,8 +21,9 @@ export default class MenuItem extends Component {
     icon: 'none',
   };
 
-  buildStyle() {
-    let {style} = this.props;
+  buildProps() {
+    let {style, title, icon, ...others} = this.props;
+
     style = [{
       backgroundColor: Theme.menuItemColor,
       paddingLeft: Theme.menuItemPaddingLeft,
@@ -34,11 +35,7 @@ export default class MenuItem extends Component {
       flexDirection: 'row',
       alignItems: 'center',
     }].concat(style);
-    return style;
-  }
 
-  renderIcon() {
-    let {icon} = this.props;
     if (icon === 'none') icon = null;
     if (icon && !React.isValidElement(icon)) {
       let imageStyle = {
@@ -52,11 +49,7 @@ export default class MenuItem extends Component {
         </View>
       );
     }
-    return icon;
-  }
 
-  renderTitle() {
-    let {title} = this.props;
     if (typeof title === 'string' || typeof title === 'number') {
       let titleStyle = {
         color: Theme.menuItemTitleColor,
@@ -67,15 +60,18 @@ export default class MenuItem extends Component {
       };
       title = <Text style={titleStyle} numberOfLines={1}>{title}</Text>
     }
-    return title;
+
+    this.props = {style, title, icon, ...others};
   }
 
   render() {
-    let {style, children, title, icon, ...others} = this.props;
+    this.buildProps();
+
+    let {title, icon, ...others} = this.props;
     return (
-      <TouchableOpacity style={this.buildStyle()} {...others}>
-        {this.renderIcon()}
-        {this.renderTitle()}
+      <TouchableOpacity {...others}>
+        {icon}
+        {title}
       </TouchableOpacity>
     );
   }
